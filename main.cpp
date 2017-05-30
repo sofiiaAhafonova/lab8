@@ -11,14 +11,6 @@ int main() {
     films.push_back(Film("Pulp Fiction",1994,8.9));
     films.push_back(Film("Harry Potter 1",2001,8.7));
     films.push_back(Film("Martian",2015,7.7));
-//    string s = "GET/file/data";
-//    auto separated =parseRequest(s);
-//    //string responseMessage = makeResponse(some parameters
-//    int status = analyzeRequest(separated);
-//    auto r = response(films, status,separated);
-//    cout<< r <<"/n/n";
-//    auto vec = parseRequest(s);
-//    cout<<vec.at(0)<<"~"<<vec.at(1)<<"~"<<endl;
 
     const int serverPort = 3000;
     TcpListener listener;
