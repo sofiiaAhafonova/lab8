@@ -4,9 +4,15 @@
 
 
 {
-    "title": "%SERVER_NAME%", 
-    "developer": "%YOUR_NAME_SURNAME%", 
+
+
+    "title": "%SERVER_NAME%",
+    
+    "developer": "%YOUR_NAME_SURNAME%",
+    
     "time": "%SERVER_TIME%"
+    
+    
 }
 
 
