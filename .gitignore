@@ -52,5 +52,7 @@ dkms.conf
 
 #build folder
 build/
+cmake-build-debug/
 #docs folder
 docs/
+
