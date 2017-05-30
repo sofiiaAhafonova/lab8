@@ -1,4 +1,12 @@
 # lab8
+
+[![Travis-CI][travis-badge]][travis-builds]
+
+[travis-badge]: https://travis-ci.org/sofiiaAhafonova/lab8.svg?branch=master
+[travis-builds]: https://travis-ci.org/sofiiaAhafonova/lab8/builds
+
+
+
 Створити TCP-сервер, що слухає запити на підключення TCP клієнтів і взаємодіє з ними за допомогою протоколу HTTP. Сервер повинен обробляти лише HTTP GET запити і повертати коректно-сформовані HTTP-відповіді. Інтерфейс сервера дозволяє звертатися до нього по HTTP-шляхах:
 / - відправити у відповідь JSON-об'єкт із інформацією про сервер:
 
@@ -29,11 +37,6 @@
 
 
 /file/data - у відповідь клієнту відправити JSON-список всіх чисел у файлі (файл data.txt).
-
-[![Travis-CI][travis-badge]][travis-builds]
-
-[travis-badge]: https://travis-ci.org/sofiiaAhafonova/lab8.svg?branch=master
-[travis-builds]: https://travis-ci.org/sofiiaAhafonova/lab8/builds
 
 
 ## Modules
