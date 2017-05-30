@@ -1,0 +1,3 @@
+/home/sofia/progbase2/labs/lab8/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/sofia/progbase2/labs/lab8/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/sofia/progbase2/labs/lab8/cmake-build-debug/CMakeFiles/lab8.dir
