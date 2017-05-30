@@ -30,6 +30,10 @@
 
 /file/data - у відповідь клієнту відправити JSON-список всіх чисел у файлі (файл data.txt).
 
+[![Travis-CI][travis-badge]][travis-builds]
+
+[travis-badge]: https://travis-ci.org/sofiiaAhafonova/lab8.svg?branch=master
+[travis-builds]: https://travis-ci.org/sofiiaAhafonova/lab8/builds
 
 
 ## Modules
