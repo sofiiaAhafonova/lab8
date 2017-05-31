@@ -9,14 +9,20 @@
 #include <iterator>
 #include <vector>
 using namespace std;
-const char* filePath = "data/data.txt";
+const char* filePath = "../data/data.txt";
 vector <string> parseRequest(string req){
-    string delim = "/";
-    string cmd = req.substr(0,req.find(delim));
+
+    string delim = " ";
+    string delim1 = "/";
+    auto found = req.find(delim);
+    string cmd = req.substr(0,found);
     vector <string>parsedReq;
     parsedReq.push_back(cmd);
-    string path  = req.substr(req.find(delim),string::npos);
+    auto found2 = req.find("H",0) -5;
+    string path  = req.substr(req.find(delim1), found2);
     parsedReq.push_back(path);
+    //string protocol = req.substr(req.find(delim), string::npos);
+    //parsedReq.push_back(protocol);
     return parsedReq;
 
 }
@@ -24,7 +30,7 @@ int analyzeRequest(vector<string> req){
     string cmd = req.at(0);
     string path = req.at(1);
     if(cmd.compare("GET") == 0){
-        if(path.compare("/") == 0) return ROOT;
+        if(!path.compare("/") ) return ROOT;
         if(path.compare("/favorites") == 0) return FAVORITES;
         if(path.compare("/file") == 0) return FILE_INF;
         if(path.compare("/file/data") == 0) return FILE_DATA;
@@ -46,7 +52,7 @@ string response(vector<Film> films,int status, vector <string> req){
         case FILE_INF: return responseFile();
         case FILE_DATA: return responseFileData();
         default:
-            return "HTTP/1.1 404 not found";
+            return "HTTP/1.1 404 not found\n";
     }
 
 }
@@ -66,7 +72,9 @@ string responseFavorites(vector<Film>films){
     json_object_set_new(json_obj,"films",j_array);
     char* jsonStr = json_dumps(json_obj, JSON_INDENT(2));
     string response = "HTTP/1.1 200 OK\nConnection: Closed\r\n\r\n";
-    return response + jsonStr;
+    response+=jsonStr;
+    free(jsonStr);
+    return response;
 }
 
 
@@ -76,12 +84,14 @@ string rootResponse(vector <Film> films){
     time(&timing);
     auto timeInfo = localtime(&timing);
     auto json = json_object();
-    json_object_set_new(json,"title", json_string("MyServ"));
-    json_object_set_new(json,"developer", json_string("Sofia Agafonova"));
+    json_object_set_new(json,"title", json_string("MyServ\n"));
+    json_object_set_new(json,"developer", json_string("Sofia Agafonova\n"));
     json_object_set_new(json,"time",json_string(asctime(timeInfo)));
 
     char* jsonStr = json_dumps(json,JSON_INDENT(2));
-    return response + jsonStr ;
+    response+=jsonStr;
+    free(jsonStr);
+    return response  ;
 }
 
 string responseFavoritesId(vector <Film> films, vector<string> req){
@@ -94,7 +104,7 @@ string responseFavoritesId(vector <Film> films, vector<string> req){
     string result = str.substr(last_index + 1);
     unsigned int index = stoi(result);
     if(index < 0 || index >= films.size()){
-        return "HTTP/1.1 404 not found";
+        return "HTTP/1.1 404 not found\n";
     }
 
     json_t * json = json_object();
@@ -111,7 +121,7 @@ string responseFavoritesId(vector <Film> films, vector<string> req){
     char * jsonString = json_dumps(json, JSON_INDENT(2));
 
     favoritesResponse += jsonString;
-
+	free(jsonString);
     return favoritesResponse;
 
 }
@@ -124,7 +134,7 @@ string responseFavoritesKey(vector <Film> films, vector<string>req){
     string delim1 ="=";
     string cmd = str.substr(str.find(delim)+1, str.find(delim1));
 
-    if(cmd.compare("rating")!=0) return   "HTTP/1.1 404 not found";
+    if(cmd.compare("rating")!=0)  return "HTTP/1.1 404 not found\n";
     string value = str.substr(str.find(delim1)+1,string::npos);
 
     float result = atof(value.c_str());
@@ -152,7 +162,7 @@ string responseFavoritesKey(vector <Film> films, vector<string>req){
 
     favoritesResponse += jsonString;
 
-
+   free(jsonString);
     return favoritesResponse;
 }
 string responseFile(){
@@ -191,7 +201,8 @@ string responseFileData(){
     json_object_set_new(json, "numbers", arr);
     char * jsonString = json_dumps(json, JSON_INDENT(2));
     fileDataResponse += jsonString;
-return fileDataResponse;
+    free(jsonString);
+    return fileDataResponse;
 
 }
 char* readFile(const char* fileName){
