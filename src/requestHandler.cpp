@@ -12,7 +12,11 @@
 #include <fstream>
 using namespace std;
 const char* filePath = "../data/data.txt";
-vector <string> parseRequest(string req){
+requestHandler::requestHandler(){
+}
+requestHandler::~requestHandler(){
+}
+vector <string> requestHandler:: parseRequest(string req){
 
     string delim = " ";
     string delim1 = "/";
@@ -23,12 +27,11 @@ vector <string> parseRequest(string req){
     auto found2 = req.find("H",0) -5;
     string path  = req.substr(req.find(delim1), found2);
     parsedReq.push_back(path);
-    //string protocol = req.substr(req.find(delim), string::npos);
-    //parsedReq.push_back(protocol);
+   
     return parsedReq;
 
 }
-int analyzeRequest(vector<string> req){
+int requestHandler:: analyzeRequest(vector<string> req){
     string cmd = req.at(0);
     string path = req.at(1);
     if(cmd.compare("GET") == 0){
@@ -43,7 +46,7 @@ int analyzeRequest(vector<string> req){
     }
     return WRONG_REQUEST;
 }
-string response(vector<Film> films,int status, vector <string> req){
+string requestHandler:: response(vector<Film> films,int status, vector <string> req){
     switch (status){
 
         case ROOT: return  rootResponse(films);
@@ -59,7 +62,7 @@ string response(vector<Film> films,int status, vector <string> req){
 
 }
 
-string responseFavorites(vector<Film>films){
+string requestHandler:: responseFavorites(vector<Film>films){
     auto json_obj = json_object();
     auto j_array = json_array();
     for(unsigned int i = 0; i < films.size(); i++){
@@ -80,7 +83,7 @@ string responseFavorites(vector<Film>films){
 }
 
 
-string rootResponse(vector <Film> films){
+string requestHandler:: rootResponse(vector <Film> films){
     string response = "HTTP/1.1 200 OK\nConnection: Closed\nContent-Type:text/html;\r\n\r\n";
     time_t timing;
     time(&timing);
@@ -96,7 +99,7 @@ string rootResponse(vector <Film> films){
     return response  ;
 }
 
-string responseFavoritesId(vector <Film> films, vector<string> req){
+string requestHandler:: responseFavoritesId(vector <Film> films, vector<string> req){
 
     string favoritesResponse = "HTTP/1.1 200 OK\n"
             "Connection: Closed\r\n\r\n";
@@ -127,7 +130,7 @@ string responseFavoritesId(vector <Film> films, vector<string> req){
     return favoritesResponse;
 
 }
-string responseFavoritesKey(vector <Film> films, vector<string>req){
+string requestHandler::  responseFavoritesKey(vector <Film> films, vector<string>req){
     string favoritesResponse = "HTTP/1.1 200 OK\n"
             "Connection: Closed\r\n\r\n";
 
@@ -169,7 +172,7 @@ string responseFavoritesKey(vector <Film> films, vector<string>req){
     json_decref(json);
     return favoritesResponse;
 }
-string responseFile(){
+string requestHandler::  responseFile(){
     string fileDataResponse = "HTTP/1.1 200 OK\n";
     fileDataResponse += "Connection: Closed\n"
             "Content-Type: text/html; charset=iso-8859-1\r\n\r\n";
@@ -194,7 +197,7 @@ bool isDigits(string word){
 	}	
 	return true;
 }
-string responseFileData(){
+string requestHandler:: responseFileData(){
     string fileDataResponse = "HTTP/1.1 200 OK\n";
     fileDataResponse += "Connection: Closed\n"
             "Content-Type: text/html; charset=iso-8859-1\r\n\r\n";
@@ -238,7 +241,7 @@ while (getline(fin, line)){
     return fileDataResponse;
 
 }
-char* readFile(const char* fileName){
+char* requestHandler:: readFile(const char* fileName){
     FILE* file = fopen(fileName,"r");
     if(file == NULL) return NULL;
     auto size = fileSize(fileName);
@@ -249,7 +252,7 @@ char* readFile(const char* fileName){
     if(fclose(file)) return  NULL;
     return text;
 }
-long fileSize(const char* fileName){
+long requestHandler:: fileSize(const char* fileName){
     FILE* file = fopen(fileName,"r");
     if(file == NULL) return-1;
     fseek(file,0,SEEK_END);

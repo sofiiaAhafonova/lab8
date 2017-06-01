@@ -18,17 +18,19 @@ int main() {
         listener.bind(IpAddress("127.0.0.1", serverPort));
         listener.start();
         while (true) {
+	requestHandler h; 
             cout << ">> Waiting for clients at " << serverPort << "..." << endl;
             TcpClient * client = listener.accept();
             client->receive(message);
             cout << ">> Received: " << endl << message.dataAsString() << endl;
-            auto data = message.dataAsString();
+            string data = message.dataAsString();
             //func to make response
-            auto separated = parseRequest(data);
+	    
+            auto separated = h.parseRequest(data);
  	    cout<< separated.at(0)<<"-"<<endl<< separated.at(1)<<"-"<<endl;
             //string responseMessage = makeResponse(some parameters
-            int status = analyzeRequest(separated);
-            auto r = response(films, status,separated);
+            int status = h.analyzeRequest(separated);
+            auto r = h.response(films, status,separated);
             message.setDataString(r);
             cout<<"response \n"<< r <<"\n\n";
             client->send(message);

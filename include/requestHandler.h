@@ -22,6 +22,19 @@ enum {
     FILE_INF,
     FILE_DATA
 };
+class requestHandler{
+public:
+/**
+  @brief constructor
+ 
+ */
+requestHandler();
+/**
+  @brief destructor
+ 
+ */
+~requestHandler();
+
 /**
   @brief parses string into string vector
   @param req = request string for parsing
@@ -92,4 +105,5 @@ char* readFile(const char* fileName);
   @returns file size
  */
 long fileSize(const char* fileName);
+};
 #endif //LAB8_REQUESTHANDLER_H
