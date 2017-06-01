@@ -45,13 +45,13 @@ typedef struct  Request{string method;
 
 /**
   @brief parses string into string vector
-  @param req = request string for parsing
+  @param req - request string for parsing
   @returns request structure with method and path
  */
  Request parseRequest(string req);
 /**
   @brief analyzes string vector
-  @param req - string vector contains parsed request
+  @param req -  request structure with method and path
   @returns int represented command
  */
 int analyzeRequest( Request req);
@@ -59,7 +59,7 @@ int analyzeRequest( Request req);
   @brief decides what  response to make
   @param films - vector of Film objects
   @param status - int represented request command
-  @param req - string vector with command and path
+  @param req -  request structure with method and path
   @returns response string
  */
 string response(vector<Film> films,int status,  Request req);
@@ -85,7 +85,7 @@ string responseFavoritesId(vector <Film> films,  Request req);
 /**
   @brief  creates response with films which searches by value in key-field
   @param films - vector of Film objects
-  @param req - string vector with command and path
+  @param req -  request structure with method and path
   @returns response on /favorites?{key}={value}
  */
 string responseFavoritesKey(vector <Film> films,   Request req);

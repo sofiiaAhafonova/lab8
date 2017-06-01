@@ -49,6 +49,12 @@ int requestHandler:: analyzeRequest(Request req){
     }
     return WRONG_REQUEST;
 }
+string error404(string wrongPath){
+	return "HTTP/1.1 404 Not Found\nConnection: Closed\nContent-Type:text/html\r\n\r\n"
+	"<html><head><title>404 Not Found</title></head>"
+	"<body><h1>Not Found</h1>"
+	"<p>The requested URL " + wrongPath + " was not found on this server</p></body></html>";
+}
 string requestHandler:: response(vector<Film> films,int status, Request req){
     switch (status){
 
@@ -60,11 +66,23 @@ string requestHandler:: response(vector<Film> films,int status, Request req){
         case FILE_INF: return responseFile();
         case FILE_DATA: return responseFileData();
         default:
-            return "HTTP/1.1 404 not found\n";
+            return error404(req.path);
     }
 
 }
+string responseStringConstructor(char* jsonStr){
+ string response = "HTTP/1.1 200 OK\nConnection: Closed\nContent-Type:text/html;\r\n\r\n";
+ response+=jsonStr;
+ free(jsonStr);
+ return response;
+}
 
+bool isDigits(string word){
+	for(unsigned int i = 0; i < word.length(); i++){
+		if(!isdigit(word[i])) return false;
+	}	
+	return true;
+}
 string requestHandler:: responseFavorites(vector<Film>films){
     auto json_obj = json_object();
     auto j_array = json_array();
@@ -79,15 +97,13 @@ string requestHandler:: responseFavorites(vector<Film>films){
     }
     json_object_set_new(json_obj,"films",j_array);
     char* jsonStr = json_dumps(json_obj, JSON_INDENT(2));
-    string response = "HTTP/1.1 200 OK\nConnection: Closed\r\n\r\n";
-    response+=jsonStr;
-    free(jsonStr);
-    return response;
+   
+    return responseStringConstructor(jsonStr);
 }
 
 
 string requestHandler:: rootResponse(vector <Film> films){
-    string response = "HTTP/1.1 200 OK\nConnection: Closed\nContent-Type:text/html;\r\n\r\n";
+   
     time_t timing;
     time(&timing);
     auto timeInfo = localtime(&timing);
@@ -97,52 +113,46 @@ string requestHandler:: rootResponse(vector <Film> films){
     json_object_set_new(json,"time",json_string(asctime(timeInfo)));
 
     char* jsonStr = json_dumps(json,JSON_INDENT(2));
-    response+=jsonStr;
-    free(jsonStr);
-    return response  ;
+   
+    return  responseStringConstructor(jsonStr) ;
 }
 
 string requestHandler:: responseFavoritesId(vector <Film> films, Request req){
 
-    string favoritesResponse = "HTTP/1.1 200 OK\n"
-            "Connection: Closed\r\n\r\n";
-
+    
     auto str = req.path;
+    
     size_t last_index = str.find_last_not_of("0123456789");
     string result = str.substr(last_index + 1);
-    unsigned int index = stoi(result);
-     string error = "HTTP/1.1 404 not found\n";
-    if(index < 0 || index >= films.size()){
-        return error;
-    } 
    
-    Film movie = films.at(index);
-    json_t * movieJ = json_object();
-    json_object_set_new(movieJ, "title", json_string(movie.title.c_str()));
-    json_object_set_new(movieJ, "rating", json_real(movie.rating));
-    json_object_set_new(movieJ, "year", json_integer(movie.year));
-    
-
+    if(result.length() > 0 && isDigits(result)) {
+	
+        unsigned int index = atoi(result.c_str());
+	if(index < 0 || index >= films.size()){
+            return  error404(req.path);
+        } 
    
-    char * jsonString = json_dumps(movieJ, JSON_INDENT(2));
-
-    favoritesResponse += jsonString;
-    free(jsonString);
-    json_decref(movieJ);
+        Film movie = films.at(index);
+        json_t * movieJ = json_object();
+        json_object_set_new(movieJ, "title", json_string(movie.title.c_str()));
+        json_object_set_new(movieJ, "rating", json_real(movie.rating));
+        json_object_set_new(movieJ, "year", json_integer(movie.year));
+        char * jsonString = json_dumps(movieJ, JSON_INDENT(2));  
+        json_decref(movieJ);
  
-    return favoritesResponse;
+        return  responseStringConstructor(jsonString);
+     }
+     return  error404(req.path);
 
 }
 string requestHandler::  responseFavoritesKey(vector <Film> films,  Request req){
-    string favoritesResponse = "HTTP/1.1 200 OK\n"
-            "Connection: Closed\r\n\r\n";
-
+   
     auto str = req.path;
     string delim = "?";
     string delim1 ="=";
     string cmd = str.substr(11, 6);
   
-    if(cmd.compare("rating")!=0)  return "HTTP/1.1 404 not found\n";
+    if(cmd.compare("rating")!=0)  return  error404(req.path);
     string value = str.substr(str.find(delim1)+1,string::npos);
 
     float result = atof(value.c_str());
@@ -169,11 +179,9 @@ string requestHandler::  responseFavoritesKey(vector <Film> films,  Request req)
 
     char * jsonString = json_dumps(json, JSON_INDENT(2));
 
-    favoritesResponse += jsonString;   
-    free(jsonString);
     json_decref(arr);
     json_decref(json);
-    return favoritesResponse;
+    return  responseStringConstructor(jsonString);
 }
 string requestHandler::  responseFile(){
     string fileDataResponse = "HTTP/1.1 200 OK\n";
@@ -194,19 +202,16 @@ string requestHandler::  responseFile(){
     free(data);
     return fileDataResponse;
 }
-bool isDigits(string word){
-	for(unsigned int i = 0; i < word.size(); ++i){
-		if(!isdigit(word[i])) return false;
-	}	
-	return true;
-}
+
 string requestHandler:: responseFileData(){
     string fileDataResponse = "HTTP/1.1 200 OK\n";
     fileDataResponse += "Connection: Closed\n"
             "Content-Type: text/html; charset=iso-8859-1\r\n\r\n";
 
-    //char* text = readFile(filePath);
-ifstream fin("../data/data.txt");
+   
+
+if(!ifstream (filePath)) return error404("/file/data");
+ifstream fin(filePath);
  string line; 
 json_t * json = json_object();
     json_t * arr = json_array();
@@ -220,7 +225,7 @@ while (getline(fin, line)){
     while(!extract.fail())
     {
 	extract >> word; //extract the word
-	if(isDigits(word)){//if the string is full of digits
+	if(isDigits(word) && word.length()>0){//if the string is full of digits
 			
 		stringstream convert; //converts strings to ints
 		convert << word; //insert the digits into our converter
