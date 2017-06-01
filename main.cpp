@@ -8,7 +8,7 @@ using namespace progbase::net;
 int main() {
     vector <Film> films;
     films.push_back(Film("Mummy",1999,8.2));
-    films.push_back(Film("Pulp Fiction",1994,8.9));
+    films.push_back(Film("Pulp Fiction",1994,8.7));
     films.push_back(Film("Harry Potter 1",2001,8.7));
     films.push_back(Film("Martian",2015,7.7));
     const int serverPort = 3000;
@@ -24,12 +24,13 @@ int main() {
             cout << ">> Received: " << endl << message.dataAsString() << endl;
             auto data = message.dataAsString();
             //func to make response
-            auto separated =parseRequest(data);
+            auto separated = parseRequest(data);
+ 	    cout<< separated.at(0)<<"-"<<endl<< separated.at(1)<<"-"<<endl;
             //string responseMessage = makeResponse(some parameters
             int status = analyzeRequest(separated);
             auto r = response(films, status,separated);
             message.setDataString(r);
-            cout<< r <<"/n/n";
+            cout<<"response \n"<< r <<"\n\n";
             client->send(message);
             cout << ">> Response sent." << endl;
             delete client;

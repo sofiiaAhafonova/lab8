@@ -3,11 +3,13 @@
 //#
 #include "requestHandler.h"
 #include <jansson.h>
+#include <string.h>
 #include "film.h"
 #include <string>
 #include <sstream>
 #include <iterator>
 #include <vector>
+#include <fstream>
 using namespace std;
 const char* filePath = "../data/data.txt";
 vector <string> parseRequest(string req){
@@ -103,25 +105,25 @@ string responseFavoritesId(vector <Film> films, vector<string> req){
     size_t last_index = str.find_last_not_of("0123456789");
     string result = str.substr(last_index + 1);
     unsigned int index = stoi(result);
+     string error = "HTTP/1.1 404 not found\n";
     if(index < 0 || index >= films.size()){
-        return "HTTP/1.1 404 not found\n";
-    }
-
-    json_t * json = json_object();
-    json_t * arr = json_array();
-
+        return error;
+    } 
+   
     Film movie = films.at(index);
     json_t * movieJ = json_object();
     json_object_set_new(movieJ, "title", json_string(movie.title.c_str()));
     json_object_set_new(movieJ, "rating", json_real(movie.rating));
     json_object_set_new(movieJ, "year", json_integer(movie.year));
-    json_array_append(arr, movieJ);
+    
 
-    json_object_set_new(json, "films", arr);
-    char * jsonString = json_dumps(json, JSON_INDENT(2));
+   
+    char * jsonString = json_dumps(movieJ, JSON_INDENT(2));
 
     favoritesResponse += jsonString;
-	free(jsonString);
+    free(jsonString);
+    json_decref(movieJ);
+ 
     return favoritesResponse;
 
 }
@@ -132,8 +134,8 @@ string responseFavoritesKey(vector <Film> films, vector<string>req){
     auto str = req.at(1);
     string delim = "?";
     string delim1 ="=";
-    string cmd = str.substr(str.find(delim)+1, str.find(delim1));
-
+    string cmd = str.substr(11, 6);
+  
     if(cmd.compare("rating")!=0)  return "HTTP/1.1 404 not found\n";
     string value = str.substr(str.find(delim1)+1,string::npos);
 
@@ -150,6 +152,7 @@ string responseFavoritesKey(vector <Film> films, vector<string>req){
             json_object_set_new(movieJ, "rating", json_real(movie.rating));
             json_object_set_new(movieJ, "year", json_integer(movie.year));
             json_array_append(arr, movieJ);
+            json_decref(movieJ);
 
         }
 
@@ -160,9 +163,10 @@ string responseFavoritesKey(vector <Film> films, vector<string>req){
 
     char * jsonString = json_dumps(json, JSON_INDENT(2));
 
-    favoritesResponse += jsonString;
-
-   free(jsonString);
+    favoritesResponse += jsonString;   
+    free(jsonString);
+    json_decref(arr);
+    json_decref(json);
     return favoritesResponse;
 }
 string responseFile(){
@@ -171,44 +175,72 @@ string responseFile(){
             "Content-Type: text/html; charset=iso-8859-1\r\n\r\n";
 
     char* data = readFile(filePath);
+    data[fileSize(filePath)-1]='\0';
     json_t * json = json_object();
     json_object_set_new(json, "name", json_string( "text.txt"));
     json_object_set_new(json, "size", json_integer(fileSize(filePath)));
     json_object_set_new(json, "content", json_string(data));
-
+	
     char * jsonString = json_dumps(json, JSON_INDENT(2));
     fileDataResponse += jsonString;
+    free(jsonString);
+    
+    free(data);
     return fileDataResponse;
+}
+bool isDigits(string word){
+	for(unsigned int i = 0; i < word.size(); ++i){
+		if(!isdigit(word[i])) return false;
+	}	
+	return true;
 }
 string responseFileData(){
     string fileDataResponse = "HTTP/1.1 200 OK\n";
     fileDataResponse += "Connection: Closed\n"
             "Content-Type: text/html; charset=iso-8859-1\r\n\r\n";
 
-    char* text = readFile(filePath);
-    std::string data(text);
-    istringstream iss(data);
-    vector<std::string> tokens{istream_iterator<std::string>{iss},istream_iterator<std::string>{}};
-    json_t * json = json_object();
+    //char* text = readFile(filePath);
+ifstream fin("../data/data.txt");
+ string line; 
+json_t * json = json_object();
     json_t * arr = json_array();
-    for (auto str : tokens) // access by reference to avoid copying
+while (getline(fin, line)){
+    
+    stringstream extract; // extract words by words;
+    extract << line; //enter the sentence that we want to extract word by word
+    string word = "";
+     
+    //while there are words to extract
+    while(!extract.fail())
     {
-        json_t * numberJ = json_object();
-        json_object_set_new(numberJ,  "number", json_integer(stoi(str)));
-        json_array_append(arr, numberJ);
+	extract >> word; //extract the word
+	if(isDigits(word)){//if the string is full of digits
+			
+		stringstream convert; //converts strings to ints
+		convert << word; //insert the digits into our converter
+		int theNumber = 0; //will hold the number inside the string			
+			//convert the string number into a int number and place it inside of theNumber variable
+		convert >> theNumber;
+		 json_array_append(arr, json_integer(theNumber)); 
+		word ="";
+	}
     }
+}
+
+   
 
     json_object_set_new(json, "numbers", arr);
     char * jsonString = json_dumps(json, JSON_INDENT(2));
     fileDataResponse += jsonString;
     free(jsonString);
+    json_decref(arr);
+    json_decref(json);
     return fileDataResponse;
 
 }
 char* readFile(const char* fileName){
     FILE* file = fopen(fileName,"r");
     if(file == NULL) return NULL;
-
     auto size = fileSize(fileName);
     if (size<0)return NULL;
     char* text =(char*) malloc (sizeof(char)*size);
