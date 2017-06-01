@@ -10,30 +10,33 @@
 #include <iterator>
 #include <vector>
 #include <fstream>
+
 using namespace std;
+
+typedef struct Request Request;
 const char* filePath = "../data/data.txt";
 requestHandler::requestHandler(){
 }
 requestHandler::~requestHandler(){
 }
-vector <string> requestHandler:: parseRequest(string req){
+ requestHandler:: Request requestHandler:: parseRequest(string req){
 
     string delim = " ";
     string delim1 = "/";
     auto found = req.find(delim);
     string cmd = req.substr(0,found);
-    vector <string>parsedReq;
-    parsedReq.push_back(cmd);
+     Request parsedReq;
+    parsedReq.method = cmd;
     auto found2 = req.find("H",0) -5;
     string path  = req.substr(req.find(delim1), found2);
-    parsedReq.push_back(path);
+    parsedReq.path = path;
    
     return parsedReq;
 
 }
-int requestHandler:: analyzeRequest(vector<string> req){
-    string cmd = req.at(0);
-    string path = req.at(1);
+int requestHandler:: analyzeRequest(Request req){
+    string cmd = req.method;
+    string path = req.path;
     if(cmd.compare("GET") == 0){
         if(!path.compare("/") ) return ROOT;
         if(path.compare("/favorites") == 0) return FAVORITES;
@@ -46,7 +49,7 @@ int requestHandler:: analyzeRequest(vector<string> req){
     }
     return WRONG_REQUEST;
 }
-string requestHandler:: response(vector<Film> films,int status, vector <string> req){
+string requestHandler:: response(vector<Film> films,int status, Request req){
     switch (status){
 
         case ROOT: return  rootResponse(films);
@@ -99,12 +102,12 @@ string requestHandler:: rootResponse(vector <Film> films){
     return response  ;
 }
 
-string requestHandler:: responseFavoritesId(vector <Film> films, vector<string> req){
+string requestHandler:: responseFavoritesId(vector <Film> films, Request req){
 
     string favoritesResponse = "HTTP/1.1 200 OK\n"
             "Connection: Closed\r\n\r\n";
 
-    auto str = req.at(1);
+    auto str = req.path;
     size_t last_index = str.find_last_not_of("0123456789");
     string result = str.substr(last_index + 1);
     unsigned int index = stoi(result);
@@ -130,11 +133,11 @@ string requestHandler:: responseFavoritesId(vector <Film> films, vector<string> 
     return favoritesResponse;
 
 }
-string requestHandler::  responseFavoritesKey(vector <Film> films, vector<string>req){
+string requestHandler::  responseFavoritesKey(vector <Film> films,  Request req){
     string favoritesResponse = "HTTP/1.1 200 OK\n"
             "Connection: Closed\r\n\r\n";
 
-    auto str = req.at(1);
+    auto str = req.path;
     string delim = "?";
     string delim1 ="=";
     string cmd = str.substr(11, 6);

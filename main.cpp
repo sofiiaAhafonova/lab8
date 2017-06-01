@@ -27,7 +27,7 @@ int main() {
             //func to make response
 	    
             auto separated = h.parseRequest(data);
- 	    cout<< separated.at(0)<<"-"<<endl<< separated.at(1)<<"-"<<endl;
+ 	    
             //string responseMessage = makeResponse(some parameters
             int status = h.analyzeRequest(separated);
             auto r = h.response(films, status,separated);
